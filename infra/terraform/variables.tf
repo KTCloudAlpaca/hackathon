@@ -45,7 +45,7 @@ variable "enable_dns_hostnames" {
 
 # Public Subnet B CIDR
 variable "public_sub_a_cidr" {
-  description = "Public Subnet B CIDR Block"
+  description = "Public Subnet A CIDR Block"
   type        = string
 
   validation {
