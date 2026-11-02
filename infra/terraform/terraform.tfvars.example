@@ -27,7 +27,7 @@ availability_zone_c = "ap-northeast-2c"
 availability_zone_d = "ap-northeast-2d"
 
 # AZ b, d로 변경
-master_availability_zone = ["ap-northeast-2a", "ap-northeast-2c","ap-northeast-2d"]
+master_availability_zone = ["ap-northeast-2a", "ap-northeast-2c"]
 
 worker_availability_zone = ["ap-northeast-2a", "ap-northeast-2c","ap-northeast-2d"]
 
