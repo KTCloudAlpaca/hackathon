@@ -49,8 +49,8 @@ variable "public_sub_a_cidr" {
   type        = string
 
   validation {
-    condition     = can(cidrhost(var.public_sub_b_cidr, 0))
-    error_message = "입력한 Public Subnet B CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.0.0/24)이 아닙니다. 현재 입력값: ${var.public_sub_b_cidr}"
+    condition     = can(cidrhost(var.public_sub_a_cidr, 0))
+    error_message = "입력한 Public Subnet A CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.0.0/24)이 아닙니다. 현재 입력값: ${var.public_sub_a_cidr}"
   }
 }
 
