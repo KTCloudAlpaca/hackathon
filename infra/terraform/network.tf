@@ -10,46 +10,82 @@ resource "aws_vpc" "main" {
   }
 }
 
-# ===== Public Subnet B =====
-resource "aws_subnet" "public_b" {
+#============가용영역 A ===================
+# ===== Public Subnet A =====
+resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_sub_b_cidr
-  availability_zone       = var.master_availability_zone
+  cidr_block              = var.public_sub_a_cidr
+  availability_zone       = var.availability_zone_a
   map_public_ip_on_launch = var.map_public_ip_on_launch
 
   tags = {
-    Name = "accordion-public-subnet-b"
+    Name = "accordion-public-subnet-a"
   }
 }
 
-# ===== Private Subnet B (Master) =====
-resource "aws_subnet" "private_b" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = var.private_sub_b_cidr
-  availability_zone = var.master_availability_zone
+# ===== Private Subnet A =====
+resource "aws_subnet" "private_a" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.private_sub_a_cidr
+  availability_zone       = var.availability_zone_a
+
 
   tags = {
-    Name = "accordion-private-subnet-b"
+    Name = "accordion-private-subnet-a"
+  }
+}
+#===============================
+
+#============가용영역 C ===================
+# ===== Public Subnet C =====
+resource "aws_subnet" "public_c" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_sub_c_cidr
+  availability_zone       = var.availability_zone_c
+  map_public_ip_on_launch = var.map_public_ip_on_launch
+
+  tags = {
+    Name = "accordion-public-subnet-c"
   }
 }
 
-# ===== Private Subnet D (Worker) =====
+# ===== Private Subnet C =====
+resource "aws_subnet" "private_c" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.private_sub_c_cidr
+  availability_zone       = var.availability_zone_c
+
+
+  tags = {
+    Name = "accordion-private-subnet-c"
+  }
+}
+#===============================
+
+#============가용영역 D ===================
+# ===== Public Subnet D =====
+resource "aws_subnet" "public_d" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_sub_d_cidr
+  availability_zone       = var.availability_zone_d
+  map_public_ip_on_launch = var.map_public_ip_on_launch
+
+  tags = {
+    Name = "accordion-public-subnet-d"
+  }
+}
+
+# ===== Private Subnet D (Worker Auto Scaling용) =====
 resource "aws_subnet" "private_d" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.private_sub_d_cidr
-  availability_zone = var.worker_availability_zone
-
-  lifecycle {
-    precondition {
-      condition     = var.master_availability_zone != var.worker_availability_zone
-      error_message = "Master와 Worker의 AZ는 서로 달라야 합니다."
-    }
-  }
+  availability_zone = var.availability_zone_d
 
   tags = {
     Name = "accordion-private-subnet-d"
   }
 }
+#===============================
 
 # ===== Internet Gateway # VPC의 인터넷 출입구 =====
 resource "aws_internet_gateway" "main" {
@@ -61,7 +97,7 @@ resource "aws_internet_gateway" "main" {
 }
 
 
-# ===== 기본 Route Table  =====
+# ===== Public Route Table =====
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -70,27 +106,49 @@ resource "aws_route_table" "public" {
   }
 }
 
-# ===== Public Route Table에 0.0.0.0/0 -> Internet Gateway 연결 =====
+# ===== Public Route Table -> Internet Gateway =====
 resource "aws_route" "public_internet_access" {
   route_table_id         = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.main.id
 }
 
-# ===== Public Subnet B -> Public Route Table 연결 =====
-resource "aws_route_table_association" "public_b" {
-  subnet_id      = aws_subnet.public_b.id
+# ===== Public Subnet A -> Public Route Table =====
+resource "aws_route_table_association" "public_a" {
+  subnet_id      = aws_subnet.public_a.id
+  route_table_id = aws_route_table.public.id
+}
+
+# ===== Public Subnet C -> Public Route Table =====
+resource "aws_route_table_association" "public_c" {
+  subnet_id      = aws_subnet.public_c.id
+  route_table_id = aws_route_table.public.id
+}
+
+# ===== Public Subnet D -> Public Route Table =====
+resource "aws_route_table_association" "public_d" {
+  subnet_id      = aws_subnet.public_d.id
   route_table_id = aws_route_table.public.id
 }
 
 
-# ===== NAT G/W용 Elastic IP =====
+# ===== NAT Gateway A용 Elastic IP =====
 resource "aws_eip" "nat_a" {
   count  = var.enable_nat_gateway ? 1 : 0
   domain = "vpc"
 
   tags = {
-    Name = "accordion-nat-eip"
+    Name = "accordion-nat-eip-a"
+  }
+}
+
+# ===== NAT Gateway C용 Elastic IP =====
+resource "aws_eip" "nat_c" {
+  count  = var.enable_nat_gateway ? 1 : 0
+  domain = "vpc"
+
+  tags = {
+    Name = "accordion-nat-eip-c"
   }
 }
 
@@ -99,61 +157,98 @@ resource "aws_nat_gateway" "nat_a" {
   count = var.enable_nat_gateway ? 1 : 0
 
   allocation_id = aws_eip.nat_a[0].id
-  subnet_id     = aws_subnet.public_b.id
+  subnet_id     = aws_subnet.public_a.id
 
-  depends_on = [aws_internet_gateway.main] # NAT G/W 생성 전에 IGW가 먼저 생성되어야 함
+  depends_on = [aws_internet_gateway.main]
 
   tags = {
     Name = "accordion-nat-a"
   }
 }
 
+# ===== NAT Gateway C outbound 통신용 =====
+resource "aws_nat_gateway" "nat_c" {
+  count = var.enable_nat_gateway ? 1 : 0
 
-# ===== Private Route Table #Private B/D가 공유하는 용도 =====
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
+  allocation_id = aws_eip.nat_c[0].id
+  subnet_id     = aws_subnet.public_c.id
+
+  depends_on = [aws_internet_gateway.main]
 
   tags = {
-    Name = "accordion-private-rt"
+    Name = "accordion-nat-c"
   }
 }
 
-# ===== Private Default Route Table: 0.0.0.0/0 -> NAT G/W 연결 =====
-resource "aws_route" "private_internet" {
+# ===== Private Route Table A =====
+resource "aws_route_table" "private_a" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "accordion-private-rt-a"
+  }
+}
+
+# ===== Private Route Table C (C/D 공유) =====
+resource "aws_route_table" "private_c" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "accordion-private-rt-c"
+  }
+}
+
+# ===== Private A -> NAT Gateway A =====
+resource "aws_route" "private_internet_a" {
   count = var.enable_nat_gateway ? 1 : 0
 
-  route_table_id         = aws_route_table.private.id
+  route_table_id         = aws_route_table.private_a.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.nat_a[0].id
 }
 
-# ===== Private Subnet B -> Private Route Table 연결 =====
-resource "aws_route_table_association" "private_b" {
-  subnet_id      = aws_subnet.private_b.id
-  route_table_id = aws_route_table.private.id
+# ===== Private C -> NAT Gateway C =====
+resource "aws_route" "private_internet_c" {
+  count = var.enable_nat_gateway ? 1 : 0
+
+  route_table_id         = aws_route_table.private_c.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_c[0].id
 }
 
-# ===== Private Subnet D -> Private Route Table 연결 =====
+# ===== Private Subnet A -> Private Route Table A =====
+resource "aws_route_table_association" "private_a" {
+  subnet_id      = aws_subnet.private_a.id
+  route_table_id = aws_route_table.private_a.id
+}
+
+# ===== Private Subnet C -> Private Route Table C =====
+resource "aws_route_table_association" "private_c" {
+  subnet_id      = aws_subnet.private_c.id
+  route_table_id = aws_route_table.private_c.id
+}
+
+# ===== Private Subnet D -> Private Route Table C =====
 resource "aws_route_table_association" "private_d" {
   subnet_id      = aws_subnet.private_d.id
-  route_table_id = aws_route_table.private.id
+  route_table_id = aws_route_table.private_c.id
 }
 
 
 # ===== NAT G/W 리소스 잘못 교체 방지 =====
 # 이부분은 잘 모르지만 일단 적어두고 나중에 찾아보겠습니다!!!
 # Terraform에게 기존 리소스의 관리 주소가 변경되었다는 사실을 알려주는 역할
-moved {
-  from = aws_eip.nat_a
-  to   = aws_eip.nat_a[0]
-}
+# moved {
+#   from = aws_eip.nat_a
+#   to   = aws_eip.nat_a[0]
+# }
 
-moved {
-  from = aws_nat_gateway.nat_a
-  to   = aws_nat_gateway.nat_a[0]
-}
+# moved {
+#   from = aws_nat_gateway.nat_a
+#   to   = aws_nat_gateway.nat_a[0]
+# }
 
-moved {
-  from = aws_route.private_internet
-  to   = aws_route.private_internet[0]
-}
+# moved {
+#   from = aws_route.private_internet
+#   to   = aws_route.private_internet[0]
+# }
