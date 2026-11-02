@@ -126,13 +126,13 @@ variable "availability_zone_d" {
 # master ec2 가용 영역
 variable "master_availability_zone" {
   description = "Master EC2 Availability Zone"
-  type        = string
+  type        = list(string)
 }
 
 # worker ec2 가용 영역
 variable "worker_availability_zone" {
   description = "Worker EC2 Availability Zone"
-  type        = string
+  type        = list(string)
 }
 
 

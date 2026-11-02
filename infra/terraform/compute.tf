@@ -1,10 +1,16 @@
 # ===== EC2 Compute =====
 # ===== Master EC2 생성 =====
 resource "aws_instance" "master" {
+  count = 2
+
   ami           = var.ubuntu_ami_id
   instance_type = var.master_instance_type
 
-  subnet_id = aws_subnet.private_b.id
+  # Master A, Master C
+  subnet_id = [
+    aws_subnet.private_a.id,
+    aws_subnet.private_c.id
+  ][count.index]
   # key_name      = aws_key_pair.main.key_name # 자동완성이 지정해준건데 아직은 변수에 없어서 주석처리함
 
   vpc_security_group_ids      = [aws_security_group.master.id]
@@ -27,16 +33,22 @@ resource "aws_instance" "master" {
   disable_api_termination = true # AWS 콘솔에서도 삭제 방지
 
   tags = {
-    Name = "accordion-master"
+    Name = "accordion-master-${count.index == 0 ? "a" : "c"}"
   }
 }
 
 # ===== Worker EC2 생성 =====
 resource "aws_instance" "worker" {
+  count = 2
+
   ami           = var.ubuntu_ami_id
   instance_type = var.worker_instance_type
 
-  subnet_id = aws_subnet.private_d.id
+  # Worker A, Worker C
+  subnet_id = [
+    aws_subnet.private_a.id,
+    aws_subnet.private_c.id
+  ][count.index]
   # key_name      = aws_key_pair.main.key_name # 자동완성이 지정해준건데 아직은 변수에 없어서 주석처리함
 
   vpc_security_group_ids      = [aws_security_group.worker.id]
@@ -59,6 +71,6 @@ resource "aws_instance" "worker" {
   disable_api_termination = true # AWS 콘솔에서도 삭제 방지
 
   tags = {
-    Name = "accordion-worker"
+    Name = "accordion-worker-${count.index == 0 ? "a" : "c"}"
   }
 }

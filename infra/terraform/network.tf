@@ -25,9 +25,9 @@ resource "aws_subnet" "public_a" {
 
 # ===== Private Subnet A =====
 resource "aws_subnet" "private_a" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.private_sub_a_cidr
-  availability_zone       = var.availability_zone_a
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_sub_a_cidr
+  availability_zone = var.availability_zone_a
 
 
   tags = {
@@ -51,9 +51,9 @@ resource "aws_subnet" "public_c" {
 
 # ===== Private Subnet C =====
 resource "aws_subnet" "private_c" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.private_sub_c_cidr
-  availability_zone       = var.availability_zone_c
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_sub_c_cidr
+  availability_zone = var.availability_zone_c
 
 
   tags = {

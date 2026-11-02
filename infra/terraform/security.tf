@@ -2,8 +2,16 @@
 
 # ===== Master Security Group  =====
 # Master EC2에 적용
-
-
+resource "aws_security_group" "master" {
+  name        = "accordion-master-sg"
+  description = "Security group for Master EC2"
+  vpc_id      = aws_vpc.main.id
+}
+##==============================
+##==============================
+##====인바운드 규칙 추가 필요====
+##==============================
+##==============================
 
 
 # ===== Worker Security Group  =====
@@ -21,10 +29,10 @@ resource "aws_security_group" "worker" {
     to_port     = 10250
     protocol    = "tcp"
     cidr_blocks = [
-    var.private_sub_a_cidr,
-    var.private_sub_c_cidr,
-    var.private_sub_d_cidr,
-  ] #[aws_security_group.master.id]
+      var.private_sub_a_cidr,
+      var.private_sub_c_cidr,
+      var.private_sub_d_cidr,
+    ] #[aws_security_group.master.id]
   }
 
   # Master EC2에서 Worker EC2로 접근 허용 : Calico VXLAN
@@ -33,11 +41,11 @@ resource "aws_security_group" "worker" {
     from_port   = 4789
     to_port     = 4789
     protocol    = "udp"
-      cidr_blocks = [
-    var.private_sub_a_cidr,
-    var.private_sub_c_cidr,
-    var.private_sub_d_cidr,
-  ] #[aws_security_group.master.id]
+    cidr_blocks = [
+      var.private_sub_a_cidr,
+      var.private_sub_c_cidr,
+      var.private_sub_d_cidr,
+    ] #[aws_security_group.master.id]
   }
 
   # Master EC2에서 Worker EC2로 접근 허용 : Calico BGP
@@ -46,11 +54,11 @@ resource "aws_security_group" "worker" {
     from_port   = 179
     to_port     = 179
     protocol    = "tcp"
-      cidr_blocks = [
-    var.private_sub_a_cidr,
-    var.private_sub_c_cidr,
-    var.private_sub_d_cidr,
-  ] # Master Subnet B CIDR
+    cidr_blocks = [
+      var.private_sub_a_cidr,
+      var.private_sub_c_cidr,
+      var.private_sub_d_cidr,
+    ] # Master Subnet B CIDR
   }
 
   # 노도포트 개방
@@ -59,7 +67,10 @@ resource "aws_security_group" "worker" {
     from_port   = 30080
     to_port     = 30080
     protocol    = "tcp"
-    cidr_blocks = ["${aws_instance.master.private_ip}/32"]
+    cidr_blocks = [
+      "${aws_instance.master[0].private_ip}/32",
+      "${aws_instance.master[1].private_ip}/32"
+    ]
   }
 
   # Worker EC2의 전체 아웃바운드 트래픽 허용

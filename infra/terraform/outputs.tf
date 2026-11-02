@@ -14,7 +14,7 @@ output "public_subnet_a_id" {
 
 output "public_subnet_c_id" {
   description = "Public Subnet C ID"
-  value       = aws_subnet.public_a.id
+  value       = aws_subnet.public_c.id
 }
 
 output "public_subnet_d_id" {
@@ -55,22 +55,43 @@ output "worker_security_group_id" {
 }
 
 # ===== EC2 정보 ======
-output "master_instance_id" {
-  description = "Master EC2 Instance ID"
-  value       = aws_instance.master.id
+# output "master_instance_id" {
+#   description = "Master EC2 Instance ID"
+#   value       = aws_instance.master.id
+# }
+#===변경
+output "master_instance_ids" {
+  description = "Master EC2 Instance IDs"
+  value       = aws_instance.master[*].id
 }
 
-output "master_private_ip" {
-  description = "Master EC2 Private IP"
-  value       = aws_instance.master.private_ip
+# output "master_private_ip" {
+#   description = "Master EC2 Private IP"
+#   value       = aws_instance.master.private_ip
+# }
+#===변경
+output "master_private_ips" {
+  description = "Master EC2 Private IPs"
+  value       = aws_instance.master[*].private_ip
 }
 
-output "worker_instance_id" {
-  description = "Worker EC2 Instance ID"
-  value       = aws_instance.worker.id
+
+# output "worker_instance_id" {
+#   description = "Worker EC2 Instance ID"
+#   value       = aws_instance.worker.id
+# }
+#===변경
+output "worker_instance_ids" {
+  description = "Worker EC2 Instance IDs"
+  value       = aws_instance.worker[*].id
 }
 
-output "worker_private_ip" {
-  description = "Worker EC2 Private IP"
-  value       = aws_instance.worker.private_ip
+# output "worker_private_ip" {
+#   description = "Worker EC2 Private IP"
+#   value       = aws_instance.worker.private_ip
+# }
+#===변경
+output "worker_private_ips" {
+  description = "Worker EC2 Private IPs"
+  value       = aws_instance.worker[*].private_ip
 }
