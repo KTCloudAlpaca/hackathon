@@ -44,8 +44,8 @@ variable "enable_dns_hostnames" {
 # ===== Subnet 설정 =====
 
 # Public Subnet B CIDR
-variable "public_sub_b_cidr" {
-  description = "Public Subnet B CIDR Block"
+variable "public_sub_a_cidr" {
+  description = "Public Subnet A CIDR Block"
   type        = string
 
   validation {
@@ -54,14 +54,45 @@ variable "public_sub_b_cidr" {
   }
 }
 
-# Private Subnet B CIDR
-variable "private_sub_b_cidr" {
-  description = "Private Subnet B CIDR Block"
+variable "public_sub_c_cidr" {
+  description = "Public Subnet C CIDR Block"
   type        = string
 
   validation {
-    condition     = can(cidrhost(var.private_sub_b_cidr, 0))
-    error_message = "입력한 Private Subnet B CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.101.0/24)이 아닙니다. 현재 입력값: ${var.private_sub_b_cidr}"
+    condition     = can(cidrhost(var.public_sub_c_cidr, 0))
+    error_message = "입력한 Public Subnet C CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.0.0/24)이 아닙니다. 현재 입력값: ${var.public_sub_c_cidr}"
+  }
+}
+
+variable "public_sub_d_cidr" {
+  description = "Public Subnet D CIDR Block"
+  type        = string
+
+  validation {
+    condition     = can(cidrhost(var.public_sub_d_cidr, 0))
+    error_message = "입력한 Public Subnet D CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.0.0/24)이 아닙니다. 현재 입력값: ${var.public_sub_d_cidr}"
+  }
+}
+
+# Private Subnet A CIDR
+variable "private_sub_a_cidr" {
+  description = "Private Subnet A CIDR Block"
+  type        = string
+
+  validation {
+    condition     = can(cidrhost(var.private_sub_a_cidr, 0))
+    error_message = "입력한 Private Subnet A CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.101.0/24)이 아닙니다. 현재 입력값: ${var.private_sub_a_cidr}"
+  }
+}
+
+# Private Subnet C CIDR
+variable "private_sub_c_cidr" {
+  description = "Private Subnet C CIDR Block"
+  type        = string
+
+  validation {
+    condition     = can(cidrhost(var.private_sub_c_cidr, 0))
+    error_message = "입력한 Private Subnet C CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.102.0/24)이 아닙니다. 현재 입력값: ${var.private_sub_c_cidr}"
   }
 }
 
@@ -72,22 +103,26 @@ variable "private_sub_d_cidr" {
 
   validation {
     condition     = can(cidrhost(var.private_sub_d_cidr, 0))
-    error_message = "입력한 Private Subnet D CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.102.0/24)이 아닙니다. 현재 입력값: ${var.private_sub_d_cidr}"
+    error_message = "입력한 Private Subnet D CIDR 주소가 올바른 IPv4 CIDR 형식(예: 10.0.103.0/24)이 아닙니다. 현재 입력값: ${var.private_sub_d_cidr}"
   }
 }
 
-# Public Subnet B 가용 영역
-variable "availability_zone_b" {
-  description = "Availability Zone B"
+# Public Subnet A 가용 영역
+variable "availability_zone_a" {
+  description = "Availability Zone A"
   type        = string
 }
 
+# Public Subnet C 가용 영역
+variable "availability_zone_c" {
+  description = "Availability Zone C"
+  type        = string
+}
 # Public Subnet D 가용 영역
 variable "availability_zone_d" {
   description = "Availability Zone D"
   type        = string
 }
-
 # master ec2 가용 영역
 variable "master_availability_zone" {
   description = "Master EC2 Availability Zone"

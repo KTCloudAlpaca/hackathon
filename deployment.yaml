@@ -17,7 +17,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: chicken-app
-          image: 916207038064.dkr.ecr.ap-northeast-2.amazonaws.com/accordion-team:v1.4
+          image: chicken-app:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

@@ -13,19 +13,23 @@ enable_dns_support   = true
 enable_dns_hostnames = true
 
 # public sub
-public_sub_b_cidr = "10.0.1.0/24"
-
+public_sub_a_cidr = "10.0.1.0/24"
+public_sub_c_cidr = "10.0.2.0/24"
+public_sub_d_cidr = "10.0.3.0/24"
 # private sub 
-private_sub_b_cidr = "10.0.101.0/24"
-private_sub_d_cidr = "10.0.102.0/24"
+private_sub_a_cidr = "10.0.101.0/24"
+private_sub_c_cidr = "10.0.102.0/24"
+private_sub_d_cidr = "10.0.103.0/24"
 
 # 기존에 사용하던 AZ
-availability_zone_b = "ap-northeast-2b"
+availability_zone_a = "ap-northeast-2a"
+availability_zone_c = "ap-northeast-2c"
 availability_zone_d = "ap-northeast-2d"
 
 # AZ b, d로 변경
-master_availability_zone = "ap-northeast-2b"
-worker_availability_zone = "ap-northeast-2d"
+master_availability_zone = ["ap-northeast-2a", "ap-northeast-2c"]
+
+worker_availability_zone = ["ap-northeast-2a", "ap-northeast-2c","ap-northeast-2d"]
 
 # Public IP 자동 할당
 map_public_ip_on_launch = true
