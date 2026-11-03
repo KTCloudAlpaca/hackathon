@@ -32,15 +32,15 @@ variable "k8s_version" {
 
 # ===== Auto Scaling 설정 =====
 variable "asg_min_size" {
-  description = "ASG Worker 최소 대수 (CPU 지표 수집을 위해 1 이상)"
+  description = "ASG Worker 최소 대수 (0이면 CPU 지표가 없어 자동 Scale Out 불가 → desired 수동 변경)"
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "asg_max_size" {
   description = "ASG Worker 최대 대수"
   type        = number
-  default     = 3
+  default     = 1
 }
 
 variable "asg_scale_out_cpu" {

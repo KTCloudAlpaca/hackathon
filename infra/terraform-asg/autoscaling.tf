@@ -1,6 +1,6 @@
 # ===== Worker Auto Scaling (AZ 2d) =====
 # CloudWatch CPU 알람 기반 Step Scaling
-# - Scale Out: 평균 CPU >= asg_scale_out_cpu       → +1 / (+20%p 이상) → +2
+# - Scale Out: 평균 CPU >= asg_scale_out_cpu (2분) → +1
 # - Scale In : 평균 CPU <  asg_scale_in_cpu (5분)  → -1
 #
 # Join 명령 조회(ssm:GetParameter)는 기존 Role의
@@ -92,17 +92,10 @@ resource "aws_autoscaling_policy" "scale_out" {
   adjustment_type           = "ChangeInCapacity"
   estimated_instance_warmup = 300
 
-  # 임계값 ~ 임계값+20%p : +1대
+  # 임계값 이상 : +1대
   step_adjustment {
     metric_interval_lower_bound = 0
-    metric_interval_upper_bound = 20
     scaling_adjustment          = 1
-  }
-
-  # 임계값+20%p 이상 : +2대
-  step_adjustment {
-    metric_interval_lower_bound = 20
-    scaling_adjustment          = 2
   }
 }
 
