@@ -65,7 +65,7 @@ kubectl get installation.operator.tigera.io default \
 # 8. Calico IPPool 확인
 echo ""
 echo "[6/7] Calico IP Pools"
-kubectl get ippools.crd.projectcalico.org \
+kubectl get ippools.projectcalico.org \
     -o wide
 
 # 9. BGP 피어 상태
