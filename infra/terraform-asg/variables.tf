@@ -54,3 +54,10 @@ variable "asg_scale_in_cpu" {
   type        = number
   default     = 30
 }
+
+# ===== ALB 연결 =====
+variable "alb_target_group_name" {
+  description = "ASG Worker를 자동 등록할 ALB 대상 그룹 이름"
+  type        = string
+  default     = "chicken-web-tg"
+}

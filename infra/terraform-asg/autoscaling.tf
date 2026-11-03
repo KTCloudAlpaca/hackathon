@@ -147,3 +147,10 @@ resource "aws_cloudwatch_metric_alarm" "cpu_low" {
 
   alarm_actions = [aws_autoscaling_policy.scale_in.arn]
 }
+
+# ===== ALB 대상 그룹 연결 =====
+# ASG가 띄운 Worker를 chicken-web-tg(NodePort 30080)에 자동 등록 / 축소 시 자동 해제
+resource "aws_autoscaling_attachment" "web" {
+  autoscaling_group_name = aws_autoscaling_group.worker.name
+  lb_target_group_arn    = data.aws_lb_target_group.web.arn
+}

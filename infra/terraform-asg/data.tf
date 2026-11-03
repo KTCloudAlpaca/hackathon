@@ -21,3 +21,8 @@ data "aws_security_group" "worker" {
   vpc_id = data.aws_vpc.main.id
   name   = "${var.project_name}-worker-sg"
 }
+
+# 기존 ALB 대상 그룹 (NodePort 30080)
+data "aws_lb_target_group" "web" {
+  name = var.alb_target_group_name
+}
