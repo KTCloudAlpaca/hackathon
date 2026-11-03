@@ -34,7 +34,7 @@
 
 set -euo pipefail
 
-CALICO_VERSION="v3.31.4"
+CALICO_VERSION="v3.33.0"
 POD_CIDR="192.168.0.0/16"
 
 # 오류가 발생하면 실행 위치를 알려준다.
@@ -81,6 +81,9 @@ echo "[OK] 기존 Calico 설치 없음"
 # STEP 3. Tigera Operator 설치
 # ------------------------------------------------------------
 echo "[3/8] Tigera Operator 설치"
+
+kubectl create -f \
+  "https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VERSION}/manifests/v3_projectcalico_org.yaml"
 
 kubectl create -f \
   "https://raw.githubusercontent.com/projectcalico/calico/${CALICO_VERSION}/manifests/tigera-operator.yaml"
@@ -216,7 +219,7 @@ if [ "$ACTUAL_NAT" != "Enabled" ]; then
 fi
 
 # Calico IPPool 생성 확인
-if ! kubectl get ippool.crd.projectcalico.org \
+if ! kubectl get ippools.projectcalico.org \
     default-ipv4-ippool >/dev/null 2>&1; then
 
     echo "[ERROR] Calico IPPool이 생성되지 않았습니다."
