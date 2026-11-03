@@ -27,7 +27,7 @@ availability_zone_c = "ap-northeast-2c"
 availability_zone_d = "ap-northeast-2d"
 
 # AZ b, d로 변경
-master_availability_zone = ["ap-northeast-2a", "ap-northeast-2c"]
+master_availability_zone = ["ap-northeast-2a", "ap-northeast-2c","ap-northeast-2d"]
 
 worker_availability_zone = ["ap-northeast-2a", "ap-northeast-2c","ap-northeast-2d"]
 
@@ -35,8 +35,8 @@ worker_availability_zone = ["ap-northeast-2a", "ap-northeast-2c","ap-northeast-2
 map_public_ip_on_launch = true
 
 # ===== EC2 사양 =====
-master_instance_type = "c7i-flex.large"
-worker_instance_type = "c7i-flex.large"
+master_instance_type = "t3.medium"
+worker_instance_type = "t3.medium"
 
 # ===== EC2 AMI ID =====
 ubuntu_ami_id = "ami-0e1eeb87102d64f40"

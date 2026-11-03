@@ -1,102 +1,84 @@
 # ===== 보안그룹 관련 tf =====
 
-# ===== Master Security Group  =====
-# Master EC2에 적용
+# 로컬 변수 정의: 모든 Private 서브넷(A, C, D) CIDR 묶음
+locals {
+  k8s_cluster_subnets = [
+    var.private_sub_a_cidr,
+    var.private_sub_c_cidr,
+    var.private_sub_d_cidr
+  ]
+}
+
+# ===== Master Security Group =====
 resource "aws_security_group" "master" {
   name        = "accordion-master-sg"
-  description = "Security group for Master EC2"
+  description = "Security group for Master EC2 (HA Control Plane)"
   vpc_id      = aws_vpc.main.id
 
-
- # worker EC2에서 Master EC2로 접근 허용 : k8s API server
-
-    ingress {
+  # 1. Kubernetes API Server (Worker -> Master, Master <-> Master)
+  ingress {
     description = "Kubernetes API Server"
     from_port   = 6443
     to_port     = 6443
     protocol    = "tcp"
-    cidr_blocks = [var.private_sub_c_cidr] #[aws_security_group.worker.id]
+    cidr_blocks = local.k8s_cluster_subnets
   }
 
-  # worker EC2에서 Master EC2로 접근 허용 : Calico VXLAN
+  # 2. etcd 서버 클라이언트 및 피어 간 통신 (Master <-> Master HA 필수)
+  ingress {
+    description = "etcd server client and peer communication"
+    from_port   = 2379
+    to_port     = 2380
+    protocol    = "tcp"
+    cidr_blocks = local.k8s_cluster_subnets
+  }
+
+  # 3. Kubelet API (Master -> Master / Control Plane 컴포넌트 헬스체크)
+  ingress {
+    description = "Kubelet API"
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = local.k8s_cluster_subnets
+  }
+
+  # 4. kube-controller-manager 및 kube-scheduler 로컬/내부 헬스체크
+  ingress {
+    description = "kube-controller-manager and kube-scheduler"
+    from_port   = 10257
+    to_port     = 10259
+    protocol    = "tcp"
+    cidr_blocks = local.k8s_cluster_subnets
+  }
+
+  # 5. Calico VXLAN (Pod 간 오버레이 네트워크 통신)
   ingress {
     description = "Calico VXLAN"
     from_port   = 4789
     to_port     = 4789
     protocol    = "udp"
-    cidr_blocks = [var.private_sub_c_cidr] #[aws_security_group.worker.id]
+    cidr_blocks = local.k8s_cluster_subnets
   }
-  # worker EC2에서 Master EC2로 접근 허용 : Calico Typha
+
+  # 6. Calico Typha
   ingress {
     description = "Calico Typha"
     from_port   = 5473
     to_port     = 5473
     protocol    = "tcp"
-    cidr_blocks = [var.private_sub_c_cidr] # Worker Subnet D CIDR
+    cidr_blocks = local.k8s_cluster_subnets
   }
 
-  # worker EC2에서 Master EC2로 접근 허용 : Calico BGP
+  # 7. Calico BGP (BGP 모드 사용 시)
   ingress {
     description = "Calico BGP"
     from_port   = 179
     to_port     = 179
     protocol    = "tcp"
-    cidr_blocks = [var.private_sub_c_cidr] # Worker Subnet D CIDR
+    cidr_blocks = local.k8s_cluster_subnets
   }
 
-  # worker EC2에서 Master EC2로 접근 허용 : kubelet API
-  ingress {
-    description = "kubelet API"
-    from_port   = 10250
-    to_port     = 10250
-    protocol    = "tcp"
-    cidr_blocks = [var.private_sub_c_cidr] #[aws_security_group.worker.id]
-  }
-
-    ingress {
-    description = "Kubernetes API Server"
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = [var.private_sub_a_cidr] #[aws_security_group.worker.id]
-  }
-
-  # worker EC2에서 Master EC2로 접근 허용 : Calico VXLAN
-  ingress {
-    description = "Calico VXLAN"
-    from_port   = 4789
-    to_port     = 4789
-    protocol    = "udp"
-    cidr_blocks = [var.private_sub_a_cidr] #[aws_security_group.worker.id]
-  }
-  # worker EC2에서 Master EC2로 접근 허용 : Calico Typha
-  ingress {
-    description = "Calico Typha"
-    from_port   = 5473
-    to_port     = 5473
-    protocol    = "tcp"
-    cidr_blocks = [var.private_sub_a_cidr] # Worker Subnet D CIDR
-  }
-
-  # worker EC2에서 Master EC2로 접근 허용 : Calico BGP
-  ingress {
-    description = "Calico BGP"
-    from_port   = 179
-    to_port     = 179
-    protocol    = "tcp"
-    cidr_blocks = [var.private_sub_a_cidr] # Worker Subnet D CIDR
-  }
-
-  # worker EC2에서 Master EC2로 접근 허용 : kubelet API
-  ingress {
-    description = "kubelet API"
-    from_port   = 10250
-    to_port     = 10250
-    protocol    = "tcp"
-    cidr_blocks = [var.private_sub_a_cidr] #[aws_security_group.worker.id]
-  }
-
-  # Master EC2의 전체 아웃바운드 트래픽 허용
+  # 전체 아웃바운드 허용
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
@@ -110,73 +92,59 @@ resource "aws_security_group" "master" {
   }
 }
 
-##==============================
-##==============================
-##====인바운드 규칙 추가 필요====
-##==============================
-##==============================
 
-
-# ===== Worker Security Group  =====
-# Worker EC2에 적용
-
+# ===== Worker Security Group =====
 resource "aws_security_group" "worker" {
   name        = "accordion-worker-sg"
   description = "Security group for Worker EC2"
   vpc_id      = aws_vpc.main.id
 
-  # Master EC2에서 Worker EC2로 접근 허용 : kubelet API
+  # 1. Kubelet API (Master -> Worker Pod 로그 수집, exec 등)
   ingress {
-    description = "kubelet API"
+    description = "Kubelet API from Cluster"
     from_port   = 10250
     to_port     = 10250
     protocol    = "tcp"
-    cidr_blocks = [
-      var.private_sub_a_cidr,
-      var.private_sub_c_cidr,
-      var.private_sub_d_cidr,
-    ] #[aws_security_group.master.id]
+    cidr_blocks = local.k8s_cluster_subnets
   }
 
-  # Master EC2에서 Worker EC2로 접근 허용 : Calico VXLAN
+  # 2. Calico VXLAN (Worker <-> Worker, Worker <-> Master Pod 통신)
   ingress {
-    description = "Calico VXLAN from Master"
+    description = "Calico VXLAN"
     from_port   = 4789
     to_port     = 4789
     protocol    = "udp"
-    cidr_blocks = [
-      var.private_sub_a_cidr,
-      var.private_sub_c_cidr,
-      var.private_sub_d_cidr,
-    ] #[aws_security_group.master.id]
+    cidr_blocks = local.k8s_cluster_subnets
   }
 
-  # Master EC2에서 Worker EC2로 접근 허용 : Calico BGP
+  # 3. Calico BGP
   ingress {
     description = "Calico BGP"
     from_port   = 179
     to_port     = 179
     protocol    = "tcp"
-    cidr_blocks = [
-      var.private_sub_a_cidr,
-      var.private_sub_c_cidr,
-      var.private_sub_d_cidr,
-    ] # Master Subnet B CIDR
+    cidr_blocks = local.k8s_cluster_subnets
   }
 
-  # 노도포트 개방
+  # 4. Chicken App NodePort (인스턴스 참조 대신 서브넷 대역으로 지정하여 순환 참조 제거)
   ingress {
-    description = "chicken app nodeport"
+    description = "Chicken App NodePort"
     from_port   = 30080
     to_port     = 30080
     protocol    = "tcp"
-    cidr_blocks = [
-      "${aws_instance.master[0].private_ip}/32",
-      "${aws_instance.master[1].private_ip}/32"
-    ]
+    cidr_blocks = local.k8s_cluster_subnets
   }
 
-  # Worker EC2의 전체 아웃바운드 트래픽 허용
+  # (선택) 표준 K8s NodePort 전체 대역(30000-32767) 허용 필요 시 추가
+  ingress {
+    description = "Kubernetes NodePort Services default range"
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = local.k8s_cluster_subnets
+  }
+
+  # 전체 아웃바운드 허용
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0

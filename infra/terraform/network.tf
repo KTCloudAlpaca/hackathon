@@ -180,6 +180,19 @@ resource "aws_nat_gateway" "nat_c" {
   }
 }
 
+resource "aws_nat_gateway" "nat_d" {
+  count = var.enable_nat_gateway ? 1 : 0
+
+  allocation_id = aws_eip.nat_d[0].id
+  subnet_id     = aws_subnet.public_d.id
+
+  depends_on = [aws_internet_gateway.main]
+
+  tags = {
+    Name = "accordion-nat-d"
+  }
+}
+
 # ===== Private Route Table A =====
 resource "aws_route_table" "private_a" {
   vpc_id = aws_vpc.main.id
@@ -214,6 +227,15 @@ resource "aws_route" "private_internet_c" {
   route_table_id         = aws_route_table.private_c.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.nat_c[0].id
+}
+
+# ===== Private D -> NAT Gateway D =====
+resource "aws_route" "private_internet_d" {
+  count = var.enable_nat_gateway ? 1 : 0
+
+  route_table_id         = aws_route_table.private_c.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_d[0].id
 }
 
 # ===== Private Subnet A -> Private Route Table A =====
