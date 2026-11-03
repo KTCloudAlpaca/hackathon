@@ -28,9 +28,9 @@ resource "aws_instance" "master" {
 
   # 삭제 방지
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
-  disable_api_termination = true # AWS 콘솔에서도 삭제 방지
+  disable_api_termination = false # AWS 콘솔에서도 삭제 방지
 
   tags = {
     Name = "accordion-master-${count.index == 0 ? "a" : "c"}"
@@ -47,7 +47,9 @@ resource "aws_instance" "worker" {
   # Worker A, Worker C
   subnet_id = [
     aws_subnet.private_a.id,
-    aws_subnet.private_c.id
+    aws_subnet.private_c.id,
+    aws_subnet.private_d.id,
+    
   ][count.index]
   # key_name      = aws_key_pair.main.key_name # 자동완성이 지정해준건데 아직은 변수에 없어서 주석처리함
 
@@ -66,9 +68,9 @@ resource "aws_instance" "worker" {
 
   # 삭제 방지
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
-  disable_api_termination = true # AWS 콘솔에서도 삭제 방지
+  disable_api_termination = false # AWS 콘솔에서도 삭제 방지
 
   tags = {
     Name = "accordion-worker-${count.index == 0 ? "a" : "c"}"
