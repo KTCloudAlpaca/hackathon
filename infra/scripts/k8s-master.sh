@@ -74,7 +74,7 @@ echo "[3/5] kubeadm init"
 
 kubeadm init \
     --apiserver-advertise-address="$MASTER_IP" \
-    --control-plane-endpoint="accordion-NLB-3c06cd89d91f090c.elb.ap-northeast-2.amazonaws.com:6443" \
+    --control-plane-endpoint="accordion-nlb-3c06cd89d91f090c.elb.ap-northeast-2.amazonaws.com:6443" \
     --upload-certs \
     --pod-network-cidr=192.168.0.0/16 \
     --cri-socket=unix:///run/containerd/containerd.sock
