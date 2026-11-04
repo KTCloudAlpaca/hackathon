@@ -14,13 +14,13 @@ Kubernetes Worker 노드(EC2)를 AWS Auto Scaling Group으로 자동 확장·축
 | --- | --- |
 | 노드 사양 | t3.medium, Ubuntu 24.04, Kubernetes v1.36.5, containerd |
 | 용량 (기본값) | 최소 1 / 최대 2 |
-| Scale Out | ASG 평균 CPU **50% 이상 1분** 지속 → +1대 |
+| Scale Out | ASG 평균 CPU **60% 이상 2분** 지속 → +1대 |
 | Scale In | ASG 평균 CPU **30% 미만 5분** 지속 → -1대 |
 | 노드 라벨 | `accordion/node-group=asg` |
 
 ## 동작 흐름
 ```
-[CloudWatch 알람] ─CPU ≥ 50% / < 30%─▶ [Scaling 정책] ─▶ [Auto Scaling Group (2d)]
+[CloudWatch 알람] ─CPU ≥ 60% / < 30%─▶ [Scaling 정책] ─▶ [Auto Scaling Group (2d)]
                                                                 │
                                                      Launch Template + user_data
                                                                 ▼
@@ -32,7 +32,7 @@ Kubernetes Worker 노드(EC2)를 AWS Auto Scaling Group으로 자동 확장·축
                                                                 │
                                                 ASG ↔ 대상 그룹 연결 (자동 등록/해제)
                                                                 ▼
-                                            [ALB chicken-web-tg → NodePort 30080]
+                                            [ALB chicken-web-tg → ㅈNodePort 30080]
 ```
 
 ## Terraform 파일 구조
@@ -117,7 +117,7 @@ terraform apply -var="asg_min_size=0" -var="asg_max_size=1"
 | --- | --- | --- |
 | `asg_min_size` | `1` | 최소 대수 (CPU 자동 확장을 위해 1 이상) |
 | `asg_max_size` | `2` | 최대 대수 |
-| `asg_scale_out_cpu` | `50` | Scale Out 기준 CPU(%) |
+| `asg_scale_out_cpu` | `60` | Scale Out 기준 CPU(%) |
 | `asg_scale_in_cpu` | `30` | Scale In 기준 CPU(%) |
 | `alb_target_group_name` | `chicken-web-tg` | 자동 등록할 ALB 대상 그룹 |
 | `ubuntu_ami_id` / `worker_instance_type` / `k8s_version` | 기존 Worker와 동일 | 노드 환경 |
