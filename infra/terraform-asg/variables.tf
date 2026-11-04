@@ -46,7 +46,7 @@ variable "asg_max_size" {
 variable "asg_scale_out_cpu" {
   description = "Scale Out 기준 ASG 평균 CPU 사용률(%)"
   type        = number
-  default     = 60
+  default     = 50
 }
 
 variable "asg_scale_in_cpu" {

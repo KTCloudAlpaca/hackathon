@@ -12,5 +12,5 @@ k8s_version          = "1.36.5"
 # ===== Worker Auto Scaling (AZ 2d) =====
 asg_min_size      = 1
 asg_max_size      = 2
-asg_scale_out_cpu = 60
+asg_scale_out_cpu = 50
 asg_scale_in_cpu  = 30

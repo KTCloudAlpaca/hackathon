@@ -1,6 +1,6 @@
 # ===== Worker Auto Scaling (AZ 2d) =====
 # CloudWatch CPU 알람 기반 Step Scaling
-# - Scale Out: 평균 CPU >= asg_scale_out_cpu (2분) → +1
+# - Scale Out: 평균 CPU >= asg_scale_out_cpu (1분) → +1
 # - Scale In : 평균 CPU <  asg_scale_in_cpu (5분)  → -1
 #
 # Join 명령 조회(ssm:GetParameter)는 기존 Role의
@@ -101,12 +101,12 @@ resource "aws_autoscaling_policy" "scale_out" {
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   alarm_name          = "${local.asg_name}-cpu-high"
-  alarm_description   = "ASG Worker 평균 CPU ${var.asg_scale_out_cpu}% 이상 (2분) → Scale Out"
+  alarm_description   = "ASG Worker 평균 CPU ${var.asg_scale_out_cpu}% 이상 (1분) → Scale Out"
   namespace           = "AWS/EC2"
   metric_name         = "CPUUtilization"
   statistic           = "Average"
-  period              = 60
-  evaluation_periods  = 2
+  period              = 60 # EC2 상세 모니터링 최소 단위 (1분)
+  evaluation_periods  = 1
   comparison_operator = "GreaterThanOrEqualToThreshold"
   threshold           = var.asg_scale_out_cpu
 
